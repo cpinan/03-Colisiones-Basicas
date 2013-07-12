@@ -8,7 +8,7 @@ window.requestAnimFrame = (function(){
           };
 })();
 
-var time;
+var time = new Date().getTime();
 
 var KEY_STATES = { UP: false, DOWN: false, LEFT: false, RIGHT: false };
 

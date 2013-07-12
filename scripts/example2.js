@@ -14,8 +14,10 @@ var Example = function()
 	var viento;
 
 	var array_border;
+	// Agregaremos una moneda a nuestro juego
 	var coin;
 
+	// Reseteamos la pelota a su posición inicial
 	var reset = function()
 	{
 		ball.x = 300;
@@ -35,7 +37,7 @@ var Example = function()
 			cargado: false,
 			rotacion: 0
 		};
-		ball.imagen.src = "resource/pelota.png";
+		ball.imagen.src = "resources/pelota.png";
 
 		ball.imagen.onload = function()
 		{
@@ -56,14 +58,14 @@ var Example = function()
 
 		array_border = [];
 
-		// Rectangulo izquierda
+		// Rectangulo izquierda verde
 		array_border.push(new Rectangle(0, 0, 40, CANVAS_HEIGHT)); 
-		// Rectangulo derecha
+		// Rectangulo derecha verde
 		array_border.push(new Rectangle(CANVAS_WIDTH - 40, 0, 40, CANVAS_HEIGHT)); 
-		// Rectangulo arriba
+		// Rectangulo arriba verde
 		array_border.push(new Rectangle(0, 0, CANVAS_WIDTH, 40));
-		// Rectangulo abajo
-		array_border.push(new Rectangle(0, CANVAS_HEIGHT - 40, CANVAS_WIDTH, CANVAS_HEIGHT - 40)); 
+		// Rectangulo abajo verde
+		array_border.push(new Rectangle(0, CANVAS_HEIGHT - 40, CANVAS_WIDTH, CANVAS_HEIGHT - 40));
 
 		// Creando moneda
 		coin = {
@@ -75,10 +77,14 @@ var Example = function()
 			cargado: false
 		};
 
+		// Cargamos la imagen de la moneda
 		coin.imagen.src = "resources/coin.png";
 
+		// Y cargamos la imagen
 		coin.imagen.onload = function()
 		{
+			// Una vez que se carga la imagen
+			// Seteamos los valores de ancho, alto y que ya se cargo.
 			coin.width = this.width;
 			coin.height = this.height;
 			coin.cargado = true;
@@ -89,8 +95,13 @@ var Example = function()
 	this.draw = function(context)
 	{
 
+		// Aqui dibujamos la moneda
 		if(coin.cargado)
 		{
+			/*
+			* Dibujamos primero la moneda porque existe un valor llamado ZINDEX
+			* que lo veremos mas adelante, que es para manejar profundidades.
+			*/
 			context.save();
 			context.drawImage(coin.imagen, coin.x, coin.y, coin.width, coin.height);
 			context.restore();
@@ -105,6 +116,11 @@ var Example = function()
 			context.drawImage(ball.imagen, ball.x, ball.y, ball.width, ball.height);
 			context.restore();
 		}
+
+		/*
+		* Aqui dibujamos los rectangulos en el canvas
+		* para que podamos verlos y saber contra que chocamos.
+		*/
 
 		if(array_border.length > 0)
 		{
@@ -145,22 +161,37 @@ var Example = function()
 
 	var manejarColisiones = function()
 	{
+		// Verificamos que hayamos cargado ambas imagenes
 		if(!ball.cargado || !coin.cargado)
 			return;
 
-		// Chequea colisión con los bordes
+		// Validamos de tener rectangulos (en realidad es obvio pero bueno xD)
 		if(array_border.length > 0)
 		{
+			// Recorremos nuestro arreglo de rectangulos
 			for(var i = 0; i < array_border.length; i++)
 			{
+				// Obtenemos los puntos del rectangulo
 				var left   = array_border[i].x;
 				var top    = array_border[i].y;
 				var right  = left + array_border[i].width;
 				var bottom = top + array_border[i].height;
 
+				/*
+				* Aqui realizamos la interseccion de 2 rectangulos
+				* La comparacion viene asi:
+				* objA = pelota ; objB = uno de los muros (hay 4 muros)
+				* Si el punto izquierdo del objA es menor o igual a la derecha del rectangulo.
+				* Si el punto derecho del objA es >= al izquierdo del muro
+				* Si el punto de arriba del objA es <= que el de abajo del muro
+				* Si el punto de abajo del objA es >= que el de arriba del muro
+				* Entonces existe interseccion.
+				* Si hable chino revisa mi blog xD
+				*/
 				if(ball.x <= right && ball.x + ball.width >= left && 
 					ball.y <= bottom && ball.y + ball.height >= top)
 				{
+					// Reseteamos los valores
 					reset();
 					break;
 				}
@@ -168,10 +199,11 @@ var Example = function()
 			}
 		}
 
-		// Chequea colisión con la moneda
+		// Chequea colisión con la moneda basado en la lógica de los muros.
 		if(ball.x <= coin.x + coin.width && ball.x + ball.width >= coin.x && 
 			ball.y <= coin.y + coin.height && ball.y + ball.height >= coin.y)
 		{
+			// Movemos la moneda aleatoriamente por la pantalla
 			coin.x = Math.random() * (CANVAS_WIDTH - 150) + 50;
 			coin.y = Math.random() * (CANVAS_HEIGHT - 150) + 50;
 		}
